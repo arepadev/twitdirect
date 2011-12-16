@@ -67,14 +67,14 @@ class Adopta:
         return text
     
     def get_followers(self):
-        response = self.core.get_followers(ACCOUNT)
+        response = self.core.get_followers(ACCOUNT, True)
         if response.code > 0:
             self.log.error("Error getting followers list:", response.errmsg)
         else:
             self.followers = response.items
     
     def get_following(self):
-        response = self.core.get_following(ACCOUNT)
+        response = self.core.get_following(ACCOUNT, True)
         if response.code > 0:
             self.log.error("Error getting following list:", response.errmsg)
         else:
@@ -85,9 +85,9 @@ class Adopta:
             if item not in self.following:
                 response = self.core.follow(ACCOUNT, str(item), by_id=True)
                 if response.code > 0:
-                    self.log.error("Error following to %i: %s" % (item, response.errmsg))
+                    self.log.error("Error following to %s: %s" % (item, response.errmsg))
                 else:
-                    self.log.debug("Follow back to %i" % item)
+                    self.log.debug("Follow back to %s" % item)
                     self.following.append(item)
     
     def process_dms(self):
