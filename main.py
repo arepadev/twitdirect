@@ -12,6 +12,7 @@ import logging
 from optparse import OptionParser
 
 from libturpial.api.core import Core
+from libturpial.common import ColumnType
 
 POLLING_TIME = 5 #min
 ACCOUNT = 'AdoptaVe-twitter'
@@ -84,11 +85,44 @@ class Adopta:
             if item not in self.following:
                 response = self.core.follow(ACCOUNT, str(item), by_id=True)
                 if response.code > 0:
-                    self.log.error("Error following to %i" % item)
+                    self.log.error("Error following to %i: %s" % (item, response.errmsg))
                 else:
                     self.log.debug("Follow back to %i" % item)
                     self.following.append(item)
-        
+    
+    def process_dms(self):
+        response = self.core.get_column_statuses(ACCOUNT, ColumnType.DIRECTS, 200)
+        if response.code > 0:
+            self.log.error("Error fetching DMs: %s" % response.errmsg)
+        else:
+            for dm in response.items:
+                msg_id = dm.id_
+                valid = self.validate_dm(dm)
+                if not valid:
+                    continue
+                
+                via = ' (via @%s)' % dm.username
+                text = dm.text
+                length = len(text) + len(via)
+                if length > 140:
+                    text = text[:len(text) - len(via)]
+                message = text + via
+                self.core.update_status(ACCOUNT, message)
+                if response.code > 0:
+                    self.log.error("Error posting message '%s': %s" % (message, response.errmsg))
+                else:
+                    self.register_message(dm)
+    
+    def validate_dm(self, dm):
+        msg_id = dm.id_
+        # TODO: Search in database for msg_id, if exist then return False
+        # otherwiser return True
+        return True
+    
+    def register_message(self, dm):
+        # TODO: Add dm to database
+        pass
+    
     def main(self):
         while True:
             try:
@@ -98,7 +132,7 @@ class Adopta:
                 self.process_follow_back()
                 
                 # Processing DMs
-                
+                self.process_dms()
                 time.sleep(POLLING_TIME * 60)
                 
             except KeyboardInterrupt:
