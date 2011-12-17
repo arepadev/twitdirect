@@ -6,6 +6,14 @@ puppies in Venezuela """
 # Author: Wil Alvarez (aka Satanas)
 # Dic 16, 2011
 
+# Setup the Django environment
+import os
+import sys
+project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_dir)
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+from adoptave.webui.models import Tweet
+
 import time
 import logging
 
@@ -14,7 +22,7 @@ from optparse import OptionParser
 from libturpial.api.core import Core
 from libturpial.common import ColumnType
 
-POLLING_TIME = 5 #min
+POLLING_TIME = 1 #min
 ACCOUNT = 'AdoptaVe-twitter'
 
 class Adopta:
@@ -114,13 +122,18 @@ class Adopta:
                     self.register_message(dm)
     
     def validate_dm(self, dm):
-        msg_id = dm.id_
         # TODO: Search in database for msg_id, if exist then return False
         # otherwiser return True
-        return True
+        if len(Tweet.objects.filter(status_id=dm.id_)) > 0:
+            return False 
+        else:
+            return True
+
     
     def register_message(self, dm):
         # TODO: Add dm to database
+        t = Tweet(status_id=dm.id_,username=dm.username,content=dm.text)
+        t.save()
         pass
     
     def main(self):
