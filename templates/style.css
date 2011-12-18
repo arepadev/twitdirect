@@ -39,5 +39,17 @@ blockquote {
 #container {
     width: 700px;
     margin: 0 auto;
-    padding: 30px;
+    padding: 15px 30px;
+}
+
+
+#footer {
+    font-size: 12px;
+    color: #999;
+    text-align: center;
+    margin-top: 20px;
+}
+
+#footer a, #footer a:hover {
+    color: #444;
 }
