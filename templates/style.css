@@ -38,15 +38,37 @@ blockquote {
 }
 
 #container {
-    width: 700px;
+    width: 960px;
     margin: 0 auto;
     padding: 15px 30px;
 }
 
+#text {
+    float: left;
+    width: 610px;
+}
+
+#tweets {
+    float: left;
+    width: 260px;
+    padding: 20px 20px;
+}
 
 #footer {
     font-size: 12px;
     color: #999;
     text-align: center;
     margin-top: 20px;
+}
+
+.clearfix:before, .clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+.clearfix:after {
+    clear: both;
 }
