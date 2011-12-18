@@ -115,7 +115,7 @@ class Adopta:
                 if length > 140:
                     text = text[:len(text) - len(via)]
                 message = text + via
-                message.text.encode('utf-8')
+                message.encode('utf-8')
                 self.core.update_status(ACCOUNT, message)
                 if response.code > 0:
                     self.log.error("Error posting message '%s': %s" % (message, response.errmsg))
