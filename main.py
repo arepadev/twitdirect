@@ -22,8 +22,9 @@ from optparse import OptionParser
 from libturpial.api.core import Core
 from libturpial.common import ColumnType
 
-POLLING_TIME = 1 #min
+POLLING_TIME = 5 #min
 ACCOUNT = 'AdoptaVe-twitter'
+MAX_FOLLOW = 3
 
 class Adopta:
     def __init__(self):
@@ -89,14 +90,21 @@ class Adopta:
             self.following = response.items
     
     def process_follow_back(self):
+        temp = []
         for item in self.followers:
             if item not in self.following:
-                response = self.core.follow(ACCOUNT, str(item), by_id=True)
-                if response.code > 0:
-                    self.log.error("Error following to %s: %s" % (item, response.errmsg))
+                if len(temp) < MAX_FOLLOW:
+                    temp.append(item)
                 else:
-                    self.log.debug("Follow back to %s" % item)
-                    self.following.append(item)
+                    break
+        
+        for item in temp:
+            response = self.core.follow(ACCOUNT, str(item), by_id=True)
+            if response.code > 0:
+                self.log.error("Error following to %s: %s" % (item, response.errmsg))
+            else:
+                self.log.debug("Follow back to %s" % item)
+                self.following.append(item)
     
     def process_dms(self):
         response = self.core.get_column_statuses(ACCOUNT, ColumnType.DIRECTS, 200)
@@ -116,9 +124,9 @@ class Adopta:
                     text = text[:len(text) - len(via)]
                 message = text + via
                 message.encode('utf-8')
-                self.core.update_status(ACCOUNT, message)
-                if response.code > 0:
-                    self.log.error("Error posting message '%s': %s" % (message, response.errmsg))
+                rtn = self.core.update_status(ACCOUNT, message)
+                if rtn.code > 0:
+                    self.log.error("Error posting message '%s': %s" % (message, rtn.errmsg))
                 else:
                     self.register_message(dm)
     
@@ -129,7 +137,6 @@ class Adopta:
             return False 
         else:
             return True
-
     
     def register_message(self, dm):
         # TODO: Add dm to database
